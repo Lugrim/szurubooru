@@ -107,6 +107,7 @@ class UserSerializer(serialization.BaseSerializer):
             "lastLoginTime": self.serialize_last_login_time,
             "version": self.serialize_version,
             "rank": self.serialize_rank,
+            "blocklist": self.serialize_blocklist,
             "avatarStyle": self.serialize_avatar_style,
             "avatarUrl": self.serialize_avatar_url,
             "commentCount": self.serialize_comment_count,
@@ -146,6 +147,9 @@ class UserSerializer(serialization.BaseSerializer):
 
     def serialize_favorite_post_count(self) -> Any:
         return self.user.favorite_post_count
+
+    def serialize_blocklist(self) -> Any:
+        return self.user.blocklist
 
     def serialize_liked_post_count(self) -> Any:
         return get_liked_post_count(self.user, self.auth_user)
@@ -292,6 +296,12 @@ def update_user_rank(
     ):
         raise errors.AuthError("Trying to set higher rank than your own.")
     user.rank = rank
+
+
+def update_user_blocklist(user: model.User, blocklist: str):
+    assert user
+    blocklist = blocklist.strip()
+    user.blocklist = blocklist or None
 
 
 def update_user_avatar(
