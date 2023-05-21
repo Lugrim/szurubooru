@@ -89,6 +89,7 @@ class UserController {
                     canEditAvatar: api.hasPrivilege(
                         `users:edit:${infix}:avatar`
                     ),
+                    canEditBlocklist: api.hasPrivilege(`users:edit:${infix}:blocklist`),
                     canEditAnything: api.hasPrivilege(`users:edit:${infix}`),
                     canListTokens: api.hasPrivilege(
                         `userTokens:list:${infix}`
@@ -183,6 +184,9 @@ class UserController {
         }
         if (e.detail.rank !== undefined) {
             e.detail.user.rank = e.detail.rank;
+        }
+        if (e.detail.blocklist !== undefined) {
+            e.detail.user.blocklist = e.detail.blocklist;
         }
 
         if (e.detail.password !== undefined) {

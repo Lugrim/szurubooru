@@ -80,6 +80,9 @@ def update_user(ctx: rest.Context, params: Dict[str, str]) -> rest.Response:
     if ctx.has_param("rank"):
         auth.verify_privilege(ctx.user, "users:edit:%s:rank" % infix)
         users.update_user_rank(user, ctx.get_param_as_string("rank"), ctx.user)
+    if ctx.has_param("blocklist"):
+        auth.verify_privilege(ctx.user, "users:edit:%s:blocklist" % infix)
+        users.update_user_blocklist(user, ctx.get_param_as_string("blocklist"))
     if ctx.has_param("avatarStyle"):
         auth.verify_privilege(ctx.user, "users:edit:%s:avatar" % infix)
         users.update_user_avatar(
