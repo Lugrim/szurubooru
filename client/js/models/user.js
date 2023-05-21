@@ -71,6 +71,10 @@ class User extends events.EventTarget {
         throw "Invalid operation";
     }
 
+	get blocklist() {
+		return this._blocklist;
+	}
+
     set name(value) {
         this._name = value;
     }
@@ -94,6 +98,10 @@ class User extends events.EventTarget {
     set password(value) {
         this._password = value;
     }
+
+	set blocklist(value) {
+		this._blocklist = value || "";
+	}
 
     static fromResponse(response) {
         const ret = new User();
@@ -120,6 +128,9 @@ class User extends events.EventTarget {
         }
         if (this._rank !== this._orig._rank) {
             detail.rank = this._rank;
+        }
+        if (this._blocklist !== this._orig._blocklist) {
+            detail.blocklist = this._blocklist;
         }
         if (this._avatarStyle !== this._orig._avatarStyle) {
             detail.avatarStyle = this._avatarStyle;
@@ -176,6 +187,7 @@ class User extends events.EventTarget {
             _name: response.name,
             _rank: response.rank,
             _email: response.email,
+            _blocklist: response.blocklist,
             _avatarStyle: response.avatarStyle,
             _avatarUrl: response.avatarUrl,
             _creationTime: response.creationTime,

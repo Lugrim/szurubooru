@@ -10,6 +10,7 @@ def test_saving_user():
     user.password_hash = "hash"
     user.email = "email"
     user.rank = "rank"
+    user.blocklist = "tag1 tag2"
     user.creation_time = datetime(1997, 1, 1)
     user.avatar_style = model.User.AVATAR_GRAVATAR
     db.session.add(user)
@@ -21,6 +22,7 @@ def test_saving_user():
     assert user.password_hash == "hash"
     assert user.email == "email"
     assert user.rank == "rank"
+    assert user.blocklist == "tag1 tag2"
     assert user.creation_time == datetime(1997, 1, 1)
     assert user.avatar_style == model.User.AVATAR_GRAVATAR
 
