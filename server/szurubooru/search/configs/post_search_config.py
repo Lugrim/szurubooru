@@ -4,7 +4,7 @@ import sqlalchemy as sa
 
 from szurubooru import db, errors, model
 from szurubooru.func import util
-from szurubooru.search import criteria, tokens
+from szurubooru.search import criteria, tokens, parser
 from szurubooru.search.configs import util as search_util
 from szurubooru.search.configs.base_search_config import (
     BaseSearchConfig,
@@ -177,6 +177,13 @@ class PostSearchConfig(BaseSearchConfig):
             else:
                 new_special_tokens.append(token)
         search_query.special_tokens = new_special_tokens
+
+        if self.user and self.user.blocklist:
+            # TODO Sort an already parsed and checked version instead?
+            blocklist_query = parser.Parser().parse(self.user.blocklist)
+            for t in blocklist_query.anonymous_tokens:
+                t.negated = True
+            search_query.anonymous_tokens += blocklist_query.anonymous_tokens
 
     def create_around_query(self) -> SaQuery:
         return db.session.query(model.Post).options(sa.orm.lazyload("*"))
