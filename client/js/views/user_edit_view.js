@@ -43,11 +43,22 @@ class UserEditView extends events.EventTarget {
             });
         }
 
-		this._autoCompleteControl = new TagAutoCompleteControl(
+		this._autoCompleteControl_wishlist = new TagAutoCompleteControl(
+			this._wishlistInputNode,
+			{
+				confirm: (tag) =>
+					this._autoCompleteControl_wishlist.replaceSelectedText(
+						misc.escapeSearchTerm(tag.names[0]),
+						true
+					),
+			}
+		);
+
+		this._autoCompleteControl_blocklist = new TagAutoCompleteControl(
 			this._blocklistInputNode,
 			{
 				confirm: (tag) =>
-					this._autoCompleteControl.replaceSelectedText(
+					this._autoCompleteControl_blocklist.replaceSelectedText(
 						misc.escapeSearchTerm(tag.names[0]),
 						true
 					),
@@ -96,6 +107,10 @@ class UserEditView extends events.EventTarget {
                         ? this._rankInputNode.value
                         : undefined,
 
+                    wishlist: this._wishlistInputNode
+                        ? this._wishlistInputNode.value
+                        : undefined,
+
                     blocklist: this._blocklistInputNode
                         ? this._blocklistInputNode.value
                         : undefined,
@@ -116,6 +131,10 @@ class UserEditView extends events.EventTarget {
 
     get _formNode() {
         return this._hostNode.querySelector("form");
+    }
+
+    get _wishlistInputNode() {
+        return this._formNode.querySelector("input[name=wishlist]");
     }
 
     get _blocklistInputNode() {

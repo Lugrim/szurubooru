@@ -71,6 +71,10 @@ class User extends events.EventTarget {
         throw "Invalid operation";
     }
 
+	get wishlist() {
+		return this._wishlist;
+	}
+
 	get blocklist() {
 		return this._blocklist;
 	}
@@ -98,6 +102,10 @@ class User extends events.EventTarget {
     set password(value) {
         this._password = value;
     }
+
+	set wishlist(value) {
+		this._wishlist = value || "";
+	}
 
 	set blocklist(value) {
 		this._blocklist = value || "";
@@ -128,6 +136,9 @@ class User extends events.EventTarget {
         }
         if (this._rank !== this._orig._rank) {
             detail.rank = this._rank;
+        }
+        if (this._wishlist !== this._orig._wishlist) {
+            detail.wishlist = this._wishlist;
         }
         if (this._blocklist !== this._orig._blocklist) {
             detail.blocklist = this._blocklist;
@@ -187,6 +198,7 @@ class User extends events.EventTarget {
             _name: response.name,
             _rank: response.rank,
             _email: response.email,
+            _wishlist: response.wishlist,
             _blocklist: response.blocklist,
             _avatarStyle: response.avatarStyle,
             _avatarUrl: response.avatarUrl,

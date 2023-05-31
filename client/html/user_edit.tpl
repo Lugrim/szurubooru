@@ -69,6 +69,16 @@
                 </li>
             <% } %>
 
+            <% if (ctx.canEditWishlist) { %>
+                <li>
+                    <%= ctx.makeTextInput({
+                        text: 'Wishlist',
+                        name: 'wishlist',
+                        value: ctx.user.wishlist,
+                    }) %>
+                </li>
+            <% } %>
+
             <% if (ctx.canEditBlocklist) { %>
                 <li>
                     <%= ctx.makeTextInput({
