@@ -181,9 +181,12 @@ class PostSearchConfig(BaseSearchConfig):
         if self.user and self.user.blocklist:
             # TODO Sort an already parsed and checked version instead?
             blocklist_query = parser.Parser().parse(self.user.blocklist)
+            search_query_orig_list = [e.criterion.original_text for e in search_query.anonymous_tokens]
             for t in blocklist_query.anonymous_tokens:
+                if t.criterion.original_text in search_query_orig_list:
+                    continue
                 t.negated = True
-            search_query.anonymous_tokens += blocklist_query.anonymous_tokens
+                search_query.anonymous_tokens.append(t)
 
     def create_around_query(self) -> SaQuery:
         return db.session.query(model.Post).options(sa.orm.lazyload("*"))
