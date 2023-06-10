@@ -145,6 +145,7 @@ def test_serialize_user(user_factory):
         user.last_edit_time = datetime(1998, 1, 1)
         user.avatar_style = model.User.AVATAR_MANUAL
         user.rank = model.User.RANK_ADMINISTRATOR
+        user.blocklist = "tag1 tag2"
         db.session.add(user)
         db.session.flush()
         assert users.serialize_user(user, auth_user) == {
@@ -152,6 +153,7 @@ def test_serialize_user(user_factory):
             "name": "dummy user",
             "email": "test@example.com",
             "rank": "administrator",
+            "blocklist": "tag1 tag2",
             "creationTime": datetime(1997, 1, 1, 0, 0),
             "lastLoginTime": None,
             "avatarStyle": "manual",
