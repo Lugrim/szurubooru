@@ -226,6 +226,7 @@ def create_user(name: str, password: str, email: str) -> model.User:
         user.rank = util.flip(auth.RANK_MAP)[config.config["default_rank"]]
     else:
         user.rank = model.User.RANK_ADMINISTRATOR
+    update_user_blocklist(user, None)
     user.creation_time = datetime.utcnow()
     user.avatar_style = model.User.AVATAR_GRAVATAR
     return user
@@ -300,7 +301,10 @@ def update_user_rank(
 
 def update_user_blocklist(user: model.User, blocklist: str):
     assert user
-    blocklist = blocklist.strip()
+    if blocklist is not None:
+        blocklist = blocklist.strip()
+    else:  # We're creating the user, use default config blocklist
+        blocklist = config.config['default_tag_blocklist']
     user.blocklist = blocklist or None
 
 
