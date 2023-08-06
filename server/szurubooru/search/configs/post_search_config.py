@@ -2,7 +2,7 @@ from typing import Any, Dict, Optional, Tuple
 
 import sqlalchemy as sa
 
-from szurubooru import db, errors, model
+from szurubooru import config, db, errors, model
 from szurubooru.func import util
 from szurubooru.search import criteria, tokens, parser
 from szurubooru.search.configs import util as search_util
@@ -178,9 +178,17 @@ class PostSearchConfig(BaseSearchConfig):
                 new_special_tokens.append(token)
         search_query.special_tokens = new_special_tokens
 
-        if self.user and self.user.blocklist:
+        blocklist_to_use = ""
+
+        if self.user:
+            if self.user.blocklist:
+                blocklist_to_use = self.user.blocklist
+            elif (self.user.rank == model.User.RANK_ANONYMOUS) and config.config["default_tag_blocklist_for_anonymous"]:
+                blocklist_to_use = config.config["default_tag_blocklist"]
+
+        if len(blocklist_to_use) > 0:
             # TODO Sort an already parsed and checked version instead?
-            blocklist_query = parser.Parser().parse(self.user.blocklist)
+            blocklist_query = parser.Parser().parse(blocklist_to_use)
             search_query_orig_list = [e.criterion.original_text for e in search_query.anonymous_tokens]
             for t in blocklist_query.anonymous_tokens:
                 if t.criterion.original_text in search_query_orig_list:

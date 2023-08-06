@@ -44,6 +44,7 @@ def get_info(ctx: rest.Context, _params: Dict[str, str] = {}) -> rest.Response:
             "tagCategoryNameRegex": config.config["tag_category_name_regex"],
             "defaultUserRank": config.config["default_rank"],
             "defaultTagBlocklist": config.config["default_tag_blocklist"],
+            "defaultTagBlocklistForAnonymous": config.config["default_tag_blocklist_for_anonymous"],
             "enableSafety": config.config["enable_safety"],
             "contactEmail": config.config["contact_email"],
             "canSendMails": bool(config.config["smtp"]["host"]),
