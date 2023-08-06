@@ -70,6 +70,9 @@ default_rank: regular
 # default blocklisted tags (space separated)
 default_tag_blocklist: ''
 
+# Apply blocklist for anonymous viewers too
+default_tag_blocklist_for_anonymous: yes
+
 privileges:
     'users:create:self':            anonymous # Registration permission
     'users:create:any':             administrator
