@@ -3,11 +3,19 @@
 const api = require("../api.js");
 const uri = require("../util/uri.js");
 const events = require("../events.js");
+const misc = require("../util/misc.js");
 
 class User extends events.EventTarget {
     constructor() {
+        const TagList = require("./tag_list.js");
+
         super();
         this._orig = {};
+
+        for (let obj of [this, this._orig]) {
+            obj._blocklist = new TagList();
+        }
+
         this._updateFromResponse({});
     }
 
@@ -129,8 +137,10 @@ class User extends events.EventTarget {
         if (this._rank !== this._orig._rank) {
             detail.rank = this._rank;
         }
-        if (this._blocklist !== this._orig._blocklist) {
-            detail.blocklist = this._blocklist;
+        if (misc.arraysDiffer(this._blocklist, this._orig._blocklist)) {
+            detail.blocklist = this._blocklist.map(
+                (relation) => relation.names[0]
+            );
         }
         if (this._avatarStyle !== this._orig._avatarStyle) {
             detail.avatarStyle = this._avatarStyle;
@@ -187,7 +197,6 @@ class User extends events.EventTarget {
             _name: response.name,
             _rank: response.rank,
             _email: response.email,
-            _blocklist: response.blocklist,
             _avatarStyle: response.avatarStyle,
             _avatarUrl: response.avatarUrl,
             _creationTime: response.creationTime,
@@ -198,6 +207,10 @@ class User extends events.EventTarget {
             _likedPostCount: response.likedPostCount,
             _dislikedPostCount: response.dislikedPostCount,
         };
+
+        for (let obj of [this, this._orig]) {
+            obj._blocklist.sync(response.blocklist);
+        }
 
         Object.assign(this, map);
         Object.assign(this._orig, map);

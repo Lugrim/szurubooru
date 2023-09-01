@@ -99,7 +99,6 @@ def user_factory():
         email="dummy",
         password_salt=None,
         password_hash=None,
-        blocklist=None,
     ):
         user = model.User()
         user.name = name or get_unique_name()
@@ -107,7 +106,6 @@ def user_factory():
         user.password_hash = password_hash or "dummy"
         user.email = email
         user.rank = rank
-        user.blocklist = blocklist
         user.creation_time = datetime(1997, 1, 1)
         user.avatar_style = model.User.AVATAR_GRAVATAR
         return user

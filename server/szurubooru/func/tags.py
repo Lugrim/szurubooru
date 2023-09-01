@@ -175,6 +175,24 @@ def get_tags_by_names(names: List[str]) -> List[model.Tag]:
     )
 
 
+def get_tags_by_exact_names(names: List[str]) -> List[model.Tag]:
+    """
+    Returns tags matching the names
+    """
+    entries = []
+    if len(names) == 0:
+        return []
+    names = [name.lower() for name in names]
+    entries = (
+        db.session.query(model.Tag)
+            .join(model.TagName)
+            .filter(
+                sa.func.lower(model.TagName.name).in_(names)
+            )
+            .all())
+    return entries
+
+
 def get_or_create_tags_by_names(
     names: List[str],
 ) -> Tuple[List[model.Tag], List[model.Tag]]:

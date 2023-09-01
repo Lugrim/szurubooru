@@ -185,9 +185,6 @@ class UserController {
         if (e.detail.rank !== undefined) {
             e.detail.user.rank = e.detail.rank;
         }
-        if (e.detail.blocklist !== undefined) {
-            e.detail.user.blocklist = e.detail.blocklist;
-        }
 
         if (e.detail.password !== undefined) {
             e.detail.user.password = e.detail.password;

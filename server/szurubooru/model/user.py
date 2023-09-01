@@ -5,6 +5,31 @@ from szurubooru.model.comment import Comment
 from szurubooru.model.post import Post, PostFavorite, PostScore
 
 
+class UserTagBlocklist(Base):
+    __tablename__ = "user_tag_blocklist"
+
+    user_id = sa.Column(
+        "user_id",
+        sa.Integer,
+        sa.ForeignKey("user.id"),
+        primary_key=True,
+        nullable=False,
+        index=True,
+    )
+    tag_id = sa.Column(
+        "tag_id",
+        sa.Integer,
+        sa.ForeignKey("tag.id"),
+        primary_key=True,
+        nullable=False,
+        index=True,
+    )
+
+    def __init__(self, user_id: int, tag_id: int) -> None:
+        self.user_id = user_id
+        self.tag_id = tag_id
+
+
 class User(Base):
     __tablename__ = "user"
 
@@ -34,9 +59,7 @@ class User(Base):
     avatar_style = sa.Column(
         "avatar_style", sa.Unicode(32), nullable=False, default=AVATAR_GRAVATAR
     )
-    # TODO switch to a tag list or any search-related object?
-    blocklist = sa.Column("blocklist", sa.Text, nullable=True)
-
+    blocklist = sa.orm.relationship("UserTagBlocklist")
     comments = sa.orm.relationship("Comment")
 
     @property

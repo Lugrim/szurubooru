@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Dict, List, Optional
 
 from szurubooru import db, model, rest, search
-from szurubooru.func import auth, serialization, snapshots, tags, versions
+from szurubooru.func import auth, serialization, snapshots, tags, versions, users
 
 _search_executor = search.Executor(search.configs.TagSearchConfig())
 
@@ -106,6 +106,7 @@ def delete_tag(ctx: rest.Context, params: Dict[str, str]) -> rest.Response:
     versions.verify_version(tag, ctx)
     auth.verify_privilege(ctx.user, "tags:delete")
     snapshots.delete(tag, ctx.user)
+    users.delete_blocklist_from_tag(tag)
     tags.delete(tag)
     ctx.session.commit()
     return {}

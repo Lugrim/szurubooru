@@ -1,7 +1,8 @@
+import logging
 from typing import Any, Dict
 
 from szurubooru import model, rest, search
-from szurubooru.func import auth, serialization, users, versions
+from szurubooru.func import auth, serialization, users, versions, tags
 
 _search_executor = search.Executor(search.configs.UserSearchConfig())
 
@@ -50,6 +51,10 @@ def create_user(
         )
     ctx.session.add(user)
     ctx.session.commit()
+    to_add, _ = users.update_user_blocklist(user, None)
+    for e in to_add:
+        ctx.session.add(e)
+    ctx.session.commit()
 
     return _serialize(ctx, user, force_show_email=True)
 
@@ -81,8 +86,15 @@ def update_user(ctx: rest.Context, params: Dict[str, str]) -> rest.Response:
         auth.verify_privilege(ctx.user, "users:edit:%s:rank" % infix)
         users.update_user_rank(user, ctx.get_param_as_string("rank"), ctx.user)
     if ctx.has_param("blocklist"):
+        # TODO: Handle new tags (which are silently ignored for now)
         auth.verify_privilege(ctx.user, "users:edit:%s:blocklist" % infix)
-        users.update_user_blocklist(user, ctx.get_param_as_string("blocklist"))
+        blocklist = ctx.get_param_as_string_list("blocklist")
+        blocklist_tags = tags.get_tags_by_names(blocklist)
+        to_add, to_remove = users.update_user_blocklist(user, blocklist_tags)
+        for e in to_remove:
+            ctx.session.delete(e)
+        for e in to_add:
+            ctx.session.add(e)
     if ctx.has_param("avatarStyle"):
         auth.verify_privilege(ctx.user, "users:edit:%s:avatar" % infix)
         users.update_user_avatar(
@@ -100,6 +112,7 @@ def delete_user(ctx: rest.Context, params: Dict[str, str]) -> rest.Response:
     versions.verify_version(user, ctx)
     infix = "self" if ctx.user.user_id == user.user_id else "any"
     auth.verify_privilege(ctx.user, "users:delete:%s" % infix)
+    users.delete_blocklist_from_user(user)
     ctx.session.delete(user)
     ctx.session.commit()
     return {}

@@ -17,8 +17,14 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column('user', sa.Column('blocklist', sa.Text, nullable=True))
-
+    op.create_table(
+        "user_tag_blocklist",
+        sa.Column("user_id", sa.Integer(), nullable=False),
+        sa.Column("tag_id", sa.Integer(), nullable=False),
+        sa.ForeignKeyConstraint(["user_id"], ["user.id"]),
+        sa.ForeignKeyConstraint(["tag_id"], ["tag.id"]),
+        sa.PrimaryKeyConstraint("user_id", "tag_id"),
+    )
 
 def downgrade():
-    op.drop_column('user', 'blocklist')
+    op.drop_table('user_tag_blocklist')

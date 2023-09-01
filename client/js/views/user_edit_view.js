@@ -4,7 +4,7 @@ const events = require("../events.js");
 const api = require("../api.js");
 const views = require("../util/views.js");
 const FileDropperControl = require("../controls/file_dropper_control.js");
-const TagAutoCompleteControl = require("../controls/tag_auto_complete_control.js");
+const TagInputControl = require("../controls/tag_input_control.js")
 const misc = require("../util/misc.js");
 
 const template = views.getTemplate("user-edit");
@@ -53,6 +53,12 @@ class UserEditView extends events.EventTarget {
 					),
 			}
 		);
+        if (this._blocklistFieldNode) {
+            new TagInputControl(
+                this._blocklistFieldNode,
+                this._user.blocklist
+            );
+        }
 
         this._formNode.addEventListener("submit", (e) => this._evtSubmit(e));
     }
@@ -96,8 +102,8 @@ class UserEditView extends events.EventTarget {
                         ? this._rankInputNode.value
                         : undefined,
 
-                    blocklist: this._blocklistInputNode
-                        ? this._blocklistInputNode.value
+                    blocklist: this._blocklistFieldNode
+                        ? misc.splitByWhitespace(this._blocklistFieldNode.value)
                         : undefined,
 
                     avatarStyle: this._avatarStyleInputNode
@@ -118,8 +124,8 @@ class UserEditView extends events.EventTarget {
         return this._hostNode.querySelector("form");
     }
 
-    get _blocklistInputNode() {
-        return this._formNode.querySelector("input[name=blocklist]");
+    get _blocklistFieldNode() {
+        return this._formNode.querySelector(".blocklist input");
     }
 
     get _rankInputNode() {
