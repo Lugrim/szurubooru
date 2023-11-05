@@ -159,6 +159,9 @@ def get_tag_by_name(name: str) -> model.Tag:
 
 
 def get_tags_by_names(names: List[str]) -> List[model.Tag]:
+    """
+    Returns all tags which names include all the letters from the input
+    """
     names = util.icase_unique(names)
     if len(names) == 0:
         return []

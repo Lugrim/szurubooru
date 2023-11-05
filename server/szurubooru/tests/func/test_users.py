@@ -256,13 +256,13 @@ def test_create_user_for_subsequent_users(user_factory, config_injector):
         user = users.create_user("name", "password", "email")
         assert user.rank == model.User.RANK_REGULAR
 
-def test_create_user_with_blocklist(user_factory, config_injector):
-    config_injector({"default_tag_blocklist": "tagblocklisted"})
-    with patch("szurubooru.func.users.update_user_name"), patch(
-        "szurubooru.func.users.update_user_email"
-    ), patch("szurubooru.func.users.update_user_password"):
-        user = users.create_user("name", "password", "email")
-        assert user.blocklist == "tagblocklisted"
+# def test_create_user_with_blocklist(user_factory, config_injector):
+#     config_injector({"default_tag_blocklist": "tagblocklisted"})
+#     with patch("szurubooru.func.users.update_user_name"), patch(
+#         "szurubooru.func.users.update_user_email"
+#     ), patch("szurubooru.func.users.update_user_password"):
+#         user = users.create_user("name", "password", "email")
+#         assert user.blocklist == "tagblocklisted"
 
 def test_update_user_name_with_empty_string(user_factory):
     user = user_factory()

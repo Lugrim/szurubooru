@@ -321,13 +321,7 @@ def get_blocklist_from_user(user: model.User):# -> list[model.UserTagBlocklist]:
             model.UserTagBlocklist.user_id == user.user_id
         )
         .all())
-    return (
-        db.session.query(model.UserTagBlocklist)
-        .filter(
-            model.UserTagBlocklist.user_id == user.user_id
-        )
-        .all()
-    )
+    return rez
 
 def get_blocklist_tag_from_user(user: model.User) -> List[model.UserTagBlocklist]:
     rez = (db.session.query(model.UserTagBlocklist.tag_id)

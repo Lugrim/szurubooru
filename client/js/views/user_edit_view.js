@@ -43,7 +43,7 @@ class UserEditView extends events.EventTarget {
             });
         }
 
-		this._autoCompleteControl = new TagAutoCompleteControl(
+		/*this._autoCompleteControl = new TagAutoCompleteControl(
 			this._blocklistInputNode,
 			{
 				confirm: (tag) =>
@@ -52,7 +52,7 @@ class UserEditView extends events.EventTarget {
 						true
 					),
 			}
-		);
+		);*/
         if (this._blocklistFieldNode) {
             new TagInputControl(
                 this._blocklistFieldNode,
