@@ -412,7 +412,7 @@ class PostSearchConfig(BaseSearchConfig):
         return util.unalias_dict(
             [
                 (
-                    ["random"],
+                    ["random", "true_random"],
                     (sa.sql.expression.func.random(), self.SORT_NONE),
                 ),
                 (["id"], (model.Post.post_id, self.SORT_DESC)),
