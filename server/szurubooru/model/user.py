@@ -25,6 +25,15 @@ class UserTagBlocklist(Base):
         index=True,
     )
 
+    tag = sa.orm.relationship(
+        "Tag",
+        backref=sa.orm.backref("user_tag_blocklist", cascade="all, delete-orphan"),
+    )
+    user = sa.orm.relationship(
+        "User",
+        backref=sa.orm.backref("user_tag_blocklist", cascade="all, delete-orphan"),
+    )
+
     def __init__(self, user_id: int, tag_id: int) -> None:
         self.user_id = user_id
         self.tag_id = tag_id
