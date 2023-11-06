@@ -15,7 +15,6 @@ def test_saving_user():
     db.session.add(user)
     db.session.flush()
     db.session.refresh(user)
-    raise NotImplementedError("Blocklist")
     assert not db.session.dirty
     assert user.name == "name"
     assert user.password_salt == "salt"
@@ -179,8 +178,6 @@ def test_cascade_deletions(post_factory, user_factory, comment_factory):
     assert db.session.query(model.Comment).count() == 1
     assert db.session.query(model.CommentScore).count() == 1
     assert db.session.query(model.Snapshot).count() == 1
-
-    raise NotImplementedError("Blocklist")
 
     db.session.delete(user)
     db.session.commit()

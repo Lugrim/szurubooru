@@ -181,16 +181,17 @@ class PostSearchConfig(BaseSearchConfig):
         blocklist_to_use = ""
 
         if self.user:
-            user_blocklist = users.get_blocklist_tag_from_user(self.user)
-            if user_blocklist:
-                blocklist_firstname_tags = db.session.query(model.Tag.first_name).filter(
-                    model.Tag.tag_id.in_([e.tag_id for e in user_blocklist])
-                ).all()
-                blocklist_to_use = [e[0] for e in blocklist_firstname_tags]
-            elif (self.user.rank == model.User.RANK_ANONYMOUS) and config.config["default_tag_blocklist_for_anonymous"]:
-                blocklist_to_use = [e.name for e in tags.get_tags_by_names(config.config["default_tag_blocklist"])]
             
-            blocklist_to_use = " ".join(blocklist_to_use)
+            if (self.user.rank == model.User.RANK_ANONYMOUS) and config.config["default_tag_blocklist_for_anonymous"]:
+                blocklist_to_use = config.config["default_tag_blocklist"]
+            else:
+                user_blocklist_tags = users.get_blocklist_tag_from_user(self.user)
+                if user_blocklist_tags:
+                    user_blocklist = db.session.query(model.Tag.first_name).filter(
+                        model.Tag.tag_id.in_([e.tag_id for e in user_blocklist_tags])
+                    ).all()
+                    blocklist_to_use = [e[0] for e in user_blocklist]
+                blocklist_to_use = " ".join(blocklist_to_use)
 
         if len(blocklist_to_use) > 0:
             # TODO Sort an already parsed and checked version instead?

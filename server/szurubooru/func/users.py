@@ -298,7 +298,6 @@ def update_user_rank(
         raise errors.AuthError("Trying to set higher rank than your own.")
     user.rank = rank
 
-import logging
 
 
 def delete_blocklist_from_user(user: model.User):
