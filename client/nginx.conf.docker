@@ -20,11 +20,11 @@ http {
     keepalive_timeout 65;
 
     upstream backend {
-        server __BACKEND__:6666;
+        server __BACKEND__:__BACKEND_PORT__;
     }
 
     server {
-        listen 80 default_server;
+        listen __LISTEN_PORT__ default_server;
 
         location ~ ^/api$ {
             return 302 /api/;
