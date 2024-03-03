@@ -280,6 +280,7 @@ def post_factory():
         id=None,
         safety=model.Post.SAFETY_SAFE,
         type=model.Post.TYPE_IMAGE,
+        tags=[],
         checksum="...",
     ):
         post = model.Post()
@@ -290,6 +291,7 @@ def post_factory():
         post.flags = []
         post.mime_type = "application/octet-stream"
         post.creation_time = datetime(1996, 1, 1)
+        post.tags = tags
         return post
 
     return factory
