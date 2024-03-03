@@ -89,12 +89,15 @@ class Executor:
             offset = 0
 
         disable_eager_loads = False
+        disable_cache = False
         for token in search_query.sort_tokens:
-            if token.name == "random":
+            if "random" in token.name:
                 disable_eager_loads = True
+                if token.name == "true_random":
+                    disable_cache = True
 
         key = (id(self.config), hash(search_query), offset, limit)
-        if cache.has(key):
+        if not disable_cache and cache.has(key):
             return cache.get(key)
 
         filter_query = self.config.create_filter_query(disable_eager_loads)
