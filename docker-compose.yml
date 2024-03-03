@@ -34,7 +34,7 @@ services:
     volumes:
       - "${MOUNT_DATA}:/data:ro"
     ports:
-      - "${PORT}:80"
+      - "${PORT}:${PORT:-80}"
 
   sql:
     image: postgres:11-alpine
