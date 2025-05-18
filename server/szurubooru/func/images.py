@@ -320,3 +320,4 @@ class Image:
             raise errors.ProcessingError(
                 "The video contains no video streams."
             )
+        self.info['exif'] = PILImage.open(BytesIO(self.content))._getexif()
