@@ -5,6 +5,7 @@ from szurubooru import db, errors, model, rest, search
 from szurubooru.func import (
     auth,
     favorites,
+    images,
     mime,
     posts,
     scores,
@@ -70,6 +71,12 @@ def create_post(
     source = ctx.get_param_as_string("source", default="")
     if ctx.has_param("contentUrl") and not source:
         source = ctx.get_param_as_string("contentUrl", default="")
+    exif = images.Image(content).info['exif']
+
+    # 0x13b = ARTIST EXIF TAG
+    if not source and exif and 0x13b in exif:
+        source = exif[0x13b]
+
     relations = ctx.get_param_as_int_list("relations", default=[])
     notes = ctx.get_param_as_list("notes", default=[])
     flags = ctx.get_param_as_string_list(
