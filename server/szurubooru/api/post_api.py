@@ -71,7 +71,7 @@ def create_post(
     source = ctx.get_param_as_string("source", default="")
     if ctx.has_param("contentUrl") and not source:
         source = ctx.get_param_as_string("contentUrl", default="")
-    exif = images.Image(content).info['exif']
+    exif = images.Image(content).info.get('exif')
 
     # 0x13b = ARTIST EXIF TAG
     if not source and exif and 0x13b in exif:
