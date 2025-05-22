@@ -323,6 +323,6 @@ class Image:
             )
         try:
             image = PILImage.open(BytesIO(self.content))
-            self.info['exif'] = image._getexif()
+            self.info['exif'] = image.getexif()
         except UnidentifiedImageError:
             logger.info("PIL does not support video, can not get EXIF")
