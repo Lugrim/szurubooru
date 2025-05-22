@@ -10,6 +10,7 @@ from typing import List
 import HeifImagePlugin
 import pillow_avif
 from PIL import Image as PILImage
+from PIL import UnidentifiedImageError
 
 from szurubooru import errors
 from szurubooru.func import mime, util
@@ -320,4 +321,8 @@ class Image:
             raise errors.ProcessingError(
                 "The video contains no video streams."
             )
-        self.info['exif'] = PILImage.open(BytesIO(self.content))._getexif()
+        try:
+            image = PILImage.open(BytesIO(self.content))
+            self.info['exif'] = image._getexif()
+        except UnidentifiedImageError:
+            logger.info("PIL does not support video, can not get EXIF")
