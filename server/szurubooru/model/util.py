@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Optional, Tuple
 
 import sqlalchemy as sa
 
@@ -6,7 +6,7 @@ from szurubooru.model.base import Base
 from szurubooru.model.user import User
 
 
-def get_resource_info(entity: Base) -> Tuple[Any, Any, Union[str, int]]:
+def get_resource_info(entity: Base) -> Tuple[Any, Any, str]:
     serializers = {
         "tag": lambda tag: tag.first_name,
         "tag_category": lambda category: category.name,
@@ -23,7 +23,7 @@ def get_resource_info(entity: Base) -> Tuple[Any, Any, Union[str, int]]:
     assert primary_key is not None
     assert len(primary_key) == 1
 
-    resource_name = serializers[resource_type](entity)  # type: Union[str, int]
+    resource_name = str(serializers[resource_type](entity))  # type: str
     assert resource_name
 
     resource_pkey = primary_key[0]  # type: Any
