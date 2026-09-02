@@ -267,7 +267,7 @@ def merge_tags(source_tag: model.Tag, target_tag: model.Tag) -> None:
 
     def merge_posts(source_tag_id: int, target_tag_id: int) -> None:
         alias1 = model.PostTag
-        alias2 = sa.orm.util.aliased(model.PostTag)
+        alias2 = sa.orm.aliased(model.PostTag)
         update_stmt = sa.sql.expression.update(alias1).where(
             alias1.tag_id == source_tag_id
         )
@@ -283,7 +283,7 @@ def merge_tags(source_tag: model.Tag, target_tag: model.Tag) -> None:
         table: model.Base, source_tag_id: int, target_tag_id: int
     ) -> None:
         alias1 = table
-        alias2 = sa.orm.util.aliased(table)
+        alias2 = sa.orm.aliased(table)
         update_stmt = (
             sa.sql.expression.update(alias1)
             .where(alias1.parent_id == source_tag_id)

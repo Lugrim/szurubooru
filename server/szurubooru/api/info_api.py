@@ -1,4 +1,5 @@
 import os
+import threading
 from datetime import datetime, timedelta
 from typing import Dict, Optional
 
@@ -7,26 +8,34 @@ from szurubooru.func import auth, posts, users, util
 
 _cache_time = None  # type: Optional[datetime]
 _cache_result = None  # type: Optional[int]
+_cache_computing: bool = False
 
 
 def _get_disk_usage() -> int:
-    global _cache_time, _cache_result
+    global _cache_time, _cache_result, _cache_computing
     threshold = timedelta(hours=48)
     now = datetime.utcnow()
-    if _cache_time and _cache_time > now - threshold:
-        assert _cache_result is not None
-        return _cache_result
+    if not _cache_computing and (
+        not _cache_time or now - _cache_time > threshold
+    ):
+        threading.Thread(target=_compute_disk_usage, daemon=False).start()
+    return _cache_result
+
+
+def _compute_disk_usage() -> None:
+    global _cache_time, _cache_result, _cache_computing
+    _cache_computing = True
     total_size = 0
-    for dir_path, _, file_names in os.walk(config.config["data_dir"]):
-        for file_name in file_names:
-            file_path = os.path.join(dir_path, file_name)
+    for dirpath, _, filenames in os.walk(config.config["data_dir"]):
+        for f in filenames:
+            fp = os.path.join(dirpath, f)
             try:
-                total_size += os.path.getsize(file_path)
+                total_size += os.path.getsize(fp)
             except FileNotFoundError:
                 pass
-    _cache_time = now
     _cache_result = total_size
-    return total_size
+    _cache_time = datetime.utcnow()
+    _cache_computing = False
 
 
 @rest.routes.get("/info/?")

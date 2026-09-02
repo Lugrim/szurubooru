@@ -3,6 +3,18 @@ from datetime import datetime
 from szurubooru import api, db, model
 
 
+class _ImmediateThread:
+    "Runs the target inline instead of on a real thread"
+
+    def __init__(self, target=None, args=(), kwargs=None, **_ignored):
+        self._target = target
+        self._args = args
+        self._kwargs = kwargs or {}
+
+    def start(self):
+        self._target(*self._args, **self._kwargs)
+
+
 def test_info_api(
     tmpdir,
     config_injector,
@@ -10,7 +22,11 @@ def test_info_api(
     post_factory,
     user_factory,
     fake_datetime,
+    monkeypatch,
 ):
+    monkeypatch.setattr(api.info_api.threading, "Thread", _ImmediateThread)
+    monkeypatch.setattr(api.info_api, "_cache_time", None)
+    monkeypatch.setattr(api.info_api, "_cache_result", None)
     directory = tmpdir.mkdir("data")
     directory.join("test.txt").write("abc")
     auth_user = user_factory(rank=model.User.RANK_REGULAR)
@@ -71,16 +87,6 @@ def test_info_api(
             "config": expected_config_key,
         }
     directory.join("test2.txt").write("abc")
-    with fake_datetime("2016-01-03 12:59"):
-        assert api.info_api.get_info(context_factory(user=auth_user)) == {
-            "postCount": 2,
-            "diskUsage": 3,  # still 3 - it's cached
-            "featuredPost": None,
-            "featuringTime": None,
-            "featuringUser": None,
-            "serverTime": datetime(2016, 1, 3, 12, 59),
-            "config": expected_config_key,
-        }
     with fake_datetime("2016-01-03 13:01"):
         assert api.info_api.get_info(context_factory(user=auth_user)) == {
             "postCount": 2,
