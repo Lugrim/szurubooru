@@ -220,7 +220,7 @@ def create_subquery_filter(
         subquery = subquery.options(sa.orm.lazyload("*"))
         subquery = filter_func(subquery, criterion, False)
         subquery = subquery.subquery("t")
-        expression = left_id_column.in_(subquery)
+        expression = left_id_column.in_(sa.select(subquery.c.foreign_id))
         if negated:
             expression = ~expression
         return query.filter(expression)

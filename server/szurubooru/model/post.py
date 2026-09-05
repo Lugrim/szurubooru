@@ -30,7 +30,7 @@ class PostFeature(Base):
     )
     time = sa.Column("time", sa.DateTime, nullable=False)
 
-    post = sa.orm.relationship("Post")  # type: Post
+    post = sa.orm.relationship("Post", back_populates="features")
     user = sa.orm.relationship(
         "User",
         backref=sa.orm.backref("post_features", cascade="all, delete-orphan"),
@@ -59,7 +59,7 @@ class PostScore(Base):
     time = sa.Column("time", sa.DateTime, nullable=False)
     score = sa.Column("score", sa.Integer, nullable=False)
 
-    post = sa.orm.relationship("Post")
+    post = sa.orm.relationship("Post", back_populates="scores")
     user = sa.orm.relationship(
         "User",
         backref=sa.orm.backref("post_scores", cascade="all, delete-orphan"),
@@ -87,7 +87,7 @@ class PostFavorite(Base):
     )
     time = sa.Column("time", sa.DateTime, nullable=False)
 
-    post = sa.orm.relationship("Post")
+    post = sa.orm.relationship("Post", back_populates="favorited_by")
     user = sa.orm.relationship(
         "User",
         backref=sa.orm.backref("post_favorites", cascade="all, delete-orphan"),
@@ -108,7 +108,7 @@ class PostNote(Base):
     polygon = sa.Column("polygon", sa.PickleType, nullable=False)
     text = sa.Column("text", sa.UnicodeText, nullable=False)
 
-    post = sa.orm.relationship("Post")
+    post = sa.orm.relationship("Post", back_populates="notes")
 
 
 class PostRelation(Base):
@@ -180,7 +180,7 @@ class PostSignature(Base):
         index=True,
     )
 
-    post = sa.orm.relationship("Post")
+    post = sa.orm.relationship("Post", back_populates="signature")
 
 
 class Post(Base):
@@ -231,6 +231,7 @@ class Post(Base):
         uselist=False,
         cascade="all, delete, delete-orphan",
         lazy="joined",
+        back_populates="post",
     )
     relations = sa.orm.relationship(
         "Post",
@@ -241,18 +242,20 @@ class Post(Base):
         backref="related_by",
     )
     features = sa.orm.relationship(
-        "PostFeature", cascade="all, delete-orphan", lazy="joined"
+        "PostFeature", cascade="all, delete-orphan", lazy="joined", back_populates="post"
     )
     scores = sa.orm.relationship(
-        "PostScore", cascade="all, delete-orphan", lazy="joined"
+        "PostScore", cascade="all, delete-orphan", lazy="joined", back_populates="post"
     )
     favorited_by = sa.orm.relationship(
-        "PostFavorite", cascade="all, delete-orphan", lazy="joined"
+        "PostFavorite", cascade="all, delete-orphan", lazy="joined", back_populates="post"
     )
     notes = sa.orm.relationship(
-        "PostNote", cascade="all, delete-orphan", lazy="joined"
+        "PostNote", cascade="all, delete-orphan", lazy="joined", back_populates="post"
     )
-    comments = sa.orm.relationship("Comment", cascade="all, delete-orphan")
+    comments = sa.orm.relationship(
+        "Comment", cascade="all, delete-orphan", back_populates="post"
+    )
     _pools = sa.orm.relationship(
         "PoolPost",
         cascade="all,delete-orphan",
@@ -265,10 +268,11 @@ class Post(Base):
     # dynamic columns
     tag_count = sa.orm.column_property(
         sa.sql.expression.select(
-            [sa.sql.expression.func.count(PostTag.tag_id)]
+            sa.sql.expression.func.count(PostTag.tag_id)
         )
         .where(PostTag.post_id == post_id)
         .correlate_except(PostTag)
+        .scalar_subquery()
     )
 
     canvas_area = sa.orm.column_property(canvas_width * canvas_height)
@@ -297,89 +301,97 @@ class Post(Base):
 
     score = sa.orm.column_property(
         sa.sql.expression.select(
-            [
-                sa.sql.expression.func.coalesce(
-                    sa.sql.expression.func.sum(PostScore.score), 0
-                )
-            ]
+            sa.sql.expression.func.coalesce(
+                sa.sql.expression.func.sum(PostScore.score), 0
+            )
         )
         .where(PostScore.post_id == post_id)
         .correlate_except(PostScore)
+        .scalar_subquery()
     )
 
     favorite_count = sa.orm.column_property(
         sa.sql.expression.select(
-            [sa.sql.expression.func.count(PostFavorite.post_id)]
+            sa.sql.expression.func.count(PostFavorite.post_id)
         )
         .where(PostFavorite.post_id == post_id)
         .correlate_except(PostFavorite)
+        .scalar_subquery()
     )
 
     last_favorite_time = sa.orm.column_property(
         sa.sql.expression.select(
-            [sa.sql.expression.func.max(PostFavorite.time)]
+            sa.sql.expression.func.max(PostFavorite.time)
         )
         .where(PostFavorite.post_id == post_id)
         .correlate_except(PostFavorite)
+        .scalar_subquery()
     )
 
     feature_count = sa.orm.column_property(
         sa.sql.expression.select(
-            [sa.sql.expression.func.count(PostFeature.post_id)]
+            sa.sql.expression.func.count(PostFeature.post_id)
         )
         .where(PostFeature.post_id == post_id)
         .correlate_except(PostFeature)
+        .scalar_subquery()
     )
 
     last_feature_time = sa.orm.column_property(
         sa.sql.expression.select(
-            [sa.sql.expression.func.max(PostFeature.time)]
+            sa.sql.expression.func.max(PostFeature.time)
         )
         .where(PostFeature.post_id == post_id)
         .correlate_except(PostFeature)
+        .scalar_subquery()
     )
 
     comment_count = sa.orm.column_property(
         sa.sql.expression.select(
-            [sa.sql.expression.func.count(Comment.post_id)]
+            sa.sql.expression.func.count(Comment.post_id)
         )
         .where(Comment.post_id == post_id)
         .correlate_except(Comment)
+        .scalar_subquery()
     )
 
     last_comment_creation_time = sa.orm.column_property(
         sa.sql.expression.select(
-            [sa.sql.expression.func.max(Comment.creation_time)]
+            sa.sql.expression.func.max(Comment.creation_time)
         )
         .where(Comment.post_id == post_id)
         .correlate_except(Comment)
+        .scalar_subquery()
     )
 
     last_comment_edit_time = sa.orm.column_property(
         sa.sql.expression.select(
-            [sa.sql.expression.func.max(Comment.last_edit_time)]
+            sa.sql.expression.func.max(Comment.last_edit_time)
         )
         .where(Comment.post_id == post_id)
         .correlate_except(Comment)
+        .scalar_subquery()
     )
 
     note_count = sa.orm.column_property(
         sa.sql.expression.select(
-            [sa.sql.expression.func.count(PostNote.post_id)]
+            sa.sql.expression.func.count(PostNote.post_id)
         )
         .where(PostNote.post_id == post_id)
         .correlate_except(PostNote)
+        .scalar_subquery()
     )
 
     relation_count = sa.orm.column_property(
         sa.sql.expression.select(
-            [sa.sql.expression.func.count(PostRelation.child_id)]
+            sa.sql.expression.func.count(PostRelation.child_id)
         )
         .where(
             (PostRelation.parent_id == post_id)
             | (PostRelation.child_id == post_id)
         )
         .correlate_except(PostRelation)
+        .scalar_subquery()
     )
 
     __mapper_args__ = {

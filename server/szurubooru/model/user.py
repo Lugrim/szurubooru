@@ -27,14 +27,16 @@ class UserTagBlocklist(Base):
 
     tag = sa.orm.relationship(
         "Tag",
-        backref=sa.orm.backref("user_tag_blocklist", cascade="all, delete-orphan"),
+        back_populates="user_blocklists",
     )
     user = sa.orm.relationship(
         "User",
-        backref=sa.orm.backref("user_tag_blocklist", cascade="all, delete-orphan"),
+        back_populates="blocklist",
     )
 
-    def __init__(self, user_id: int=None, tag_id: int=None, user=None, tag=None) -> None:
+    def __init__(
+        self, user_id: int = None, tag_id: int = None, user=None, tag=None
+    ) -> None:
         if user_id is not None:
             self.user_id = user_id
         if tag_id is not None:
@@ -75,8 +77,12 @@ class User(Base):
         "avatar_style", sa.Unicode(32), nullable=False, default=AVATAR_GRAVATAR
     )
 
-    blocklist = sa.orm.relationship("UserTagBlocklist")
-    comments = sa.orm.relationship("Comment")
+    blocklist = sa.orm.relationship(
+        "UserTagBlocklist",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    comments = sa.orm.relationship("Comment", back_populates="user")
 
     @property
     def post_count(self) -> int:

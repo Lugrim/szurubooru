@@ -8,8 +8,116 @@ from unittest.mock import patch
 import freezegun
 import pytest
 import sqlalchemy as sa
+import sqlalchemy.orm as sa_orm
+import testing.postgresql
+from sqlalchemy import event
 
 from szurubooru import config, db, model, rest
+
+_PG_ARGS = (
+    "-c TimeZone=UTC "
+    "-c fsync=off "
+    "-c synchronous_commit=off "
+    "-c full_page_writes=off "
+)
+
+
+@pytest.fixture(scope="session")
+def _pg_server():
+    with testing.postgresql.Postgresql(postgres_args=_PG_ARGS) as pg:
+        yield pg
+
+
+@pytest.fixture(scope="session")
+def _pg_engine(_pg_server):
+    engine = sa.create_engine(_pg_server.url())
+    yield engine
+    engine.dispose()
+
+
+class _TransactedTestDB:
+    """Test DB fixture that rolls back the entire transaction on reset_db().
+
+    DDL (CREATE TABLE) and DML both live inside an outer connection-level
+    transaction.  session.commit() only releases a SAVEPOINT; the outer
+    transaction is never committed, so trans.rollback() undoes everything.
+    """
+
+    def __init__(self, connection, session, transaction):
+        self._connection = connection
+        self._transaction = transaction
+        self.session = session
+
+    def create_table(self, *tables):
+        for table in tables:
+            table.create(bind=self._connection, checkfirst=True)
+
+    def reset_db(self):
+        self.session.close()
+        if self._transaction.is_active:
+            self._transaction.rollback()
+
+
+class _CommittingTestDB:
+    """Test DB fixture for tests that need real commits.
+
+    reset_db() drops and recreates the public schema.
+    """
+
+    def __init__(self, session, engine):
+        self.session = session
+        self._engine = engine
+
+    def create_table(self, *tables):
+        with self._engine.begin() as conn:
+            for table in tables:
+                table.create(bind=conn, checkfirst=True)
+
+    def reset_db(self):
+        self.session.close()
+        with self._engine.connect() as conn:
+            conn.execute(sa.text("DROP SCHEMA public CASCADE"))
+            conn.execute(sa.text("CREATE SCHEMA public"))
+            conn.commit()
+
+
+@pytest.fixture
+def transacted_postgresql_db(_pg_engine):
+    """Override pytest_pgsql's fixture with an SA 2.0-compatible version."""
+    conn = _pg_engine.connect()
+    trans = conn.begin()
+    # bind= is deprecated in SA 2.0 but still functional; removed in SA 3.0
+    session = sa_orm.Session(bind=conn)  # noqa: SA-legacy
+    # A savepoint makes session.commit() release the savepoint rather than
+    # committing the outer connection-level transaction.
+    session.begin_nested()
+
+    @event.listens_for(session, "after_transaction_end")
+    def _restart_savepoint(session, transaction):
+        if transaction.nested and not transaction._parent.nested:
+            session.begin_nested()
+
+    try:
+        yield _TransactedTestDB(conn, session, trans)
+    finally:
+        session.close()
+        if trans.is_active:
+            trans.rollback()
+        conn.close()
+
+
+@pytest.fixture
+def postgresql_db(_pg_engine):
+    """Override pytest_pgsql's fixture with an SA 2.0-compatible version."""
+    session = sa_orm.Session(_pg_engine)
+    try:
+        yield _CommittingTestDB(session, _pg_engine)
+    finally:
+        session.close()
+        with _pg_engine.connect() as conn:
+            conn.execute(sa.text("DROP SCHEMA public CASCADE"))
+            conn.execute(sa.text("CREATE SCHEMA public"))
+            conn.commit()
 
 
 def get_unique_name():

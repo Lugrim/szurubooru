@@ -132,22 +132,11 @@ def create(entity: model.Base, auth_user: Optional[model.User]) -> None:
 def modify(entity: model.Base, auth_user: Optional[model.User]) -> None:
     assert entity
 
-    table = next(
-        (
-            cls
-            for cls in model.Base._decl_class_registry.values()
-            if hasattr(cls, "__table__")
-            and cls.__table__.fullname == entity.__table__.fullname
-        ),
-        None,
-    )
-    assert table
-
     snapshot = _create(model.Snapshot.OPERATION_MODIFIED, entity, auth_user)
     snapshot_factory = _snapshot_factories[snapshot.resource_type]
 
     detached_session = sa.orm.sessionmaker(bind=db.session.get_bind())()
-    detached_entity = detached_session.query(table).get(snapshot.resource_pkey)
+    detached_entity = detached_session.get(type(entity), snapshot.resource_pkey)
     assert detached_entity, "Entity not found in DB, have you committed it?"
     detached_snapshot = snapshot_factory(detached_entity)
     detached_session.close()

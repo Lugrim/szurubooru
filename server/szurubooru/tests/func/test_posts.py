@@ -475,6 +475,9 @@ def test_update_post_content_for_new_post(
     expected_type,
     output_file_name,
 ):
+    if input_file == "avif-avis.avif":
+        pytest.xfail("avif-avis file format not supported in pillow-heif>=1.3.0")
+
     with patch("szurubooru.func.util.get_sha1"), patch(
         "szurubooru.func.util.get_md5"
     ):

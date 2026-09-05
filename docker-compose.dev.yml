@@ -37,8 +37,8 @@ services:
       - "./client/:/opt/app/"
       - "/opt/app/public/"
     ports:
-      - "${PORT}:80"
-      - "8081:8081"
+      - "127.0.0.1:${PORT}:80"
+      - "127.0.0.1:8081:8081"
 
   sql:
     image: postgres:11-alpine

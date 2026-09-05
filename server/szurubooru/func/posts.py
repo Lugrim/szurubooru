@@ -442,21 +442,21 @@ def update_post_source(post: model.Post, source: Optional[str]) -> None:
     post.source = source or None
 
 
-@sa.events.event.listens_for(model.Post, "after_insert")
+@sa.event.listens_for(model.Post, "after_insert")
 def _after_post_insert(
     _mapper: Any, _connection: Any, post: model.Post
 ) -> None:
     _sync_post_content(post)
 
 
-@sa.events.event.listens_for(model.Post, "after_update")
+@sa.event.listens_for(model.Post, "after_update")
 def _after_post_update(
     _mapper: Any, _connection: Any, post: model.Post
 ) -> None:
     _sync_post_content(post)
 
 
-@sa.events.event.listens_for(model.Post, "before_delete")
+@sa.event.listens_for(model.Post, "before_delete")
 def _before_post_delete(
     _mapper: Any, _connection: Any, post: model.Post
 ) -> None:
@@ -643,7 +643,7 @@ def update_post_content(post: model.Post, content: Optional[bytes]) -> None:
 
     if update_signature:
         purge_post_signature(post)
-        post.signature = generate_post_signature(post, content)
+        generate_post_signature(post, content)
 
     post.file_size = len(content)
     try:
@@ -823,7 +823,7 @@ def merge_posts(
         target_post_id: int,
     ) -> None:
         alias1 = table
-        alias2 = sa.orm.util.aliased(table)
+        alias2 = sa.orm.aliased(table)
         update_stmt = sa.sql.expression.update(alias1).where(
             alias1.post_id == source_post_id
         )
@@ -867,7 +867,7 @@ def merge_posts(
 
     def merge_relations(source_post_id: int, target_post_id: int) -> None:
         alias1 = model.PostRelation
-        alias2 = sa.orm.util.aliased(model.PostRelation)
+        alias2 = sa.orm.aliased(model.PostRelation)
         update_stmt = (
             sa.sql.expression.update(alias1)
             .where(alias1.parent_id == source_post_id)
@@ -949,7 +949,7 @@ def search_by_image(image_content: bytes) -> List[Tuple[float, model.Post]]:
     ORDER BY score DESC LIMIT 100;
     """
 
-    candidates = db.session.execute(dbquery, {"q": query_words})
+    candidates = db.session.execute(sa.text(dbquery), {"q": query_words})
     data = tuple(
         zip(
             *[

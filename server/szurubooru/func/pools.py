@@ -243,7 +243,7 @@ def merge_pools(source_pool: model.Pool, target_pool: model.Pool) -> None:
 
     def merge_pool_posts(source_pool_id: int, target_pool_id: int) -> None:
         alias1 = model.PoolPost
-        alias2 = sa.orm.util.aliased(model.PoolPost)
+        alias2 = sa.orm.aliased(model.PoolPost)
         update_stmt = sa.sql.expression.update(alias1).where(
             alias1.pool_id == source_pool_id
         )

@@ -8,7 +8,7 @@ from szurubooru import config
 
 _data = threading.local()
 _engine = sa.create_engine(config.config["database"])  # type: Any
-_sessionmaker = sa.orm.sessionmaker(bind=_engine, autoflush=False)  # type: Any
+_sessionmaker = sa.orm.sessionmaker(_engine, autoflush=False)  # type: Any
 session = sa.orm.scoped_session(_sessionmaker)  # type: Any
 
 
